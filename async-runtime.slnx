@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/IL/">
+    <File Path="IL\experiment.il" />
+    <File Path="IL\standart.il" />
+  </Folder>
+  <Project Path="Async.Compiler\Async.Compiler.csproj" />
+  <Project Path="Async.Runtime\Async.Runtime.csproj" />
+  <Project Path="Benchmark/Benchmark.csproj" />
+  <Project Path="Manual\Manual.csproj" />
+</Solution>
