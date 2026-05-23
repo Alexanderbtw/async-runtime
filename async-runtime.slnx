@@ -1,10 +1,13 @@
 <Solution>
+  <Configurations>
+    <BuildType Name="Standard" />
+    <BuildType Name="AsyncRuntime" />
+  </Configurations>
   <Folder Name="/IL/">
     <File Path="IL\experiment.il" />
     <File Path="IL\standart.il" />
   </Folder>
-  <Project Path="Async.Compiler\Async.Compiler.csproj" />
-  <Project Path="Async.Runtime\Async.Runtime.csproj" />
+  <Project Path="Async\Async.csproj" />
   <Project Path="Benchmark/Benchmark.csproj" />
   <Project Path="Manual\Manual.csproj" />
 </Solution>

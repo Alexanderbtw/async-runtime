@@ -16,6 +16,9 @@ Console.WriteLine();
 await CustomAwaiterDemo.RunAsync();
 Console.WriteLine();
 
+await MyTaskDemo.RunAsync();
+Console.WriteLine();
+
 await TcsDemo.RunAsync();
 Console.WriteLine();
 
