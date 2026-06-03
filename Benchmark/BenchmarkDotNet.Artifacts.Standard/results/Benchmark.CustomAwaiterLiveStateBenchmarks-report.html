@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.CustomAwaiterLiveStateBenchmarks-20260603-063734</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, macOS 26.4.1 (25E253) [Darwin 25.4.0]
+Apple M3 Pro, 1 CPU, 11 logical and 11 physical cores
+.NET SDK 11.0.100-preview.4.26230.115
+  [Host]   : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+  ShortRun : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                           </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>ValueTask_CustomAwaiter_NoLiveState</td><td>33.50 ns</td><td>15.766 ns</td><td>0.864 ns</td><td>0.0200</td><td>168 B</td>
+</tr><tr><td>Task_CustomAwaiter_EightLiveValues</td><td>37.48 ns</td><td>3.165 ns</td><td>0.173 ns</td><td>0.0229</td><td>192 B</td>
+</tr><tr><td>Task_CustomAwaiter_NoLiveState</td><td>38.32 ns</td><td>48.577 ns</td><td>2.663 ns</td><td>0.0191</td><td>160 B</td>
+</tr><tr><td>ValueTask_CustomAwaiter_EightLiveValues</td><td>43.65 ns</td><td>31.371 ns</td><td>1.720 ns</td><td>0.0239</td><td>200 B</td>
+</tr></tbody></table>
+</body>
+</html>

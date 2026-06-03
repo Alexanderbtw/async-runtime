@@ -10,4 +10,7 @@
   <Project Path="Async\Async.csproj" />
   <Project Path="Benchmark/Benchmark.csproj" />
   <Project Path="Manual\Manual.csproj" />
+  <Project Path="SizeBench/SizeBench.csproj">
+    <BuildType Project="Debug" />
+  </Project>
 </Solution>

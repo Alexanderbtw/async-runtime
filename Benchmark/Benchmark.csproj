@@ -2,17 +2,26 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
-        <Configurations>Debug;Release;Standard;AsyncRuntime</Configurations>
+        <TargetFramework>net11.0</TargetFramework>
+        <Configurations>Standard;AsyncRuntime</Configurations>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <!-- Release is required for BenchmarkDotNet -->
+        <DebugType>portable</DebugType>
+        <DebugSymbols>true</DebugSymbols>
         <Optimize>true</Optimize>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Standard'">
+        <UseRuntimeAsync>false</UseRuntimeAsync>
+        <DefineConstants>$(DefineConstants);STANDARD_ASYNC</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'AsyncRuntime'">
+        <Features>$(Features);runtime-async=on</Features>
+        <DefineConstants>$(DefineConstants);RUNTIME_ASYNC</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     </ItemGroup>
-
 </Project>

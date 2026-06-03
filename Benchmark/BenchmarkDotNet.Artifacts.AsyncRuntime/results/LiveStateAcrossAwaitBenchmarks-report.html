@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>LiveStateAcrossAwaitBenchmarks-20260603-064935</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, macOS 26.4.1 (25E253) [Darwin 25.4.0]
+Apple M3 Pro, 1 CPU, 11 logical and 11 physical cores
+.NET SDK 11.0.100-preview.4.26230.115
+  [Host]   : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+  ShortRun : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method             </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Task_NoLiveState</td><td>1.275 &mu;s</td><td>0.7057 &mu;s</td><td>0.0387 &mu;s</td><td>0.0114</td><td>96 B</td>
+</tr><tr><td>Task_OneLiveValue</td><td>1.299 &mu;s</td><td>0.7885 &mu;s</td><td>0.0432 &mu;s</td><td>0.0114</td><td>96 B</td>
+</tr><tr><td>ValueTask_NoLiveState</td><td>1.486 &mu;s</td><td>1.5968 &mu;s</td><td>0.0875 &mu;s</td><td>0.0114</td><td>104 B</td>
+</tr><tr><td>ValueTask_OneLiveValue</td><td>1.503 &mu;s</td><td>0.8597 &mu;s</td><td>0.0471 &mu;s</td><td>0.0114</td><td>104 B</td>
+</tr><tr><td>Task_EightLiveValues</td><td>1.507 &mu;s</td><td>3.5011 &mu;s</td><td>0.1919 &mu;s</td><td>0.0153</td><td>128 B</td>
+</tr><tr><td>ValueTask_EightLiveValues</td><td>1.514 &mu;s</td><td>1.5584 &mu;s</td><td>0.0854 &mu;s</td><td>0.0153</td><td>136 B</td>
+</tr></tbody></table>
+</body>
+</html>

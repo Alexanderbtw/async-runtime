@@ -4,7 +4,6 @@ using BenchmarkDotNet.Attributes;
 namespace Benchmark;
 
 [MemoryDiagnoser]
-[HideColumns("Error", "StdDev", "RatioSD")]
 public class TaskAllocationBenchmarks
 {
     [Benchmark(Baseline = true)]

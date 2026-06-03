@@ -3,7 +3,6 @@ using BenchmarkDotNet.Attributes;
 namespace Benchmark;
 
 [MemoryDiagnoser]
-[HideColumns("Error", "StdDev", "RatioSD")]
 public class TaskTimeoutBenchmarks
 {
     private readonly static Task CompletedTask = Task.CompletedTask;

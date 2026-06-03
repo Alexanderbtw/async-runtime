@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.SuspendedOnceDepthBenchmarks-20260603-064149</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, macOS 26.4.1 (25E253) [Darwin 25.4.0]
+Apple M3 Pro, 1 CPU, 11 logical and 11 physical cores
+.NET SDK 11.0.100-preview.4.26230.115
+  [Host]   : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+  ShortRun : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method           </th><th>Depth</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Task_SuspendedOnce</td><td>2</td><td>1.514 &mu;s</td><td>1.7575 &mu;s</td><td>0.0963 &mu;s</td><td>0.0420</td><td>365 B</td>
+</tr><tr><td>ValueTask_SuspendedOnce</td><td>1</td><td>1.538 &mu;s</td><td>0.6539 &mu;s</td><td>0.0358 &mu;s</td><td>0.0362</td><td>312 B</td>
+</tr><tr><td>Task_SuspendedOnce</td><td>1</td><td>1.694 &mu;s</td><td>6.3275 &mu;s</td><td>0.3468 &mu;s</td><td>0.0324</td><td>276 B</td>
+</tr><tr><td>ValueTask_SuspendedOnce</td><td>2</td><td>1.710 &mu;s</td><td>0.4556 &mu;s</td><td>0.0250 &mu;s</td><td>0.0496</td><td>417 B</td>
+</tr><tr><td>Task_SuspendedOnce</td><td>4</td><td>1.794 &mu;s</td><td>1.4359 &mu;s</td><td>0.0787 &mu;s</td><td>0.0629</td><td>542 B</td>
+</tr><tr><td>ValueTask_SuspendedOnce</td><td>4</td><td>1.830 &mu;s</td><td>0.4309 &mu;s</td><td>0.0236 &mu;s</td><td>0.0687</td><td>595 B</td>
+</tr><tr><td>Task_SuspendedOnce</td><td>8</td><td>2.311 &mu;s</td><td>3.9659 &mu;s</td><td>0.2174 &mu;s</td><td>0.0992</td><td>849 B</td>
+</tr><tr><td>Task_SuspendedOnce</td><td>16</td><td>2.942 &mu;s</td><td>2.8599 &mu;s</td><td>0.1568 &mu;s</td><td>0.1869</td><td>1571 B</td>
+</tr><tr><td>ValueTask_SuspendedOnce</td><td>16</td><td>3.222 &mu;s</td><td>1.2569 &mu;s</td><td>0.0689 &mu;s</td><td>0.1984</td><td>1667 B</td>
+</tr><tr><td>ValueTask_SuspendedOnce</td><td>8</td><td>3.274 &mu;s</td><td>20.6804 &mu;s</td><td>1.1336 &mu;s</td><td>0.1221</td><td>1025 B</td>
+</tr></tbody></table>
+</body>
+</html>
