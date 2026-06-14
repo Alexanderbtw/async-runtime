@@ -1,75 +1,81 @@
 using Benchmark.Common;
 
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Order;
 
 namespace Benchmark;
 
 /// <summary>
-/// Простая цепочка прямой передачи задач без вычислений и без приостановки,
-/// чтобы измерить накладные расходы на передачу задач и await без фактического переключения контекста или выполнения кода между ними.
+/// High-density forwarding patterns. Direct forwarding is a non-async baseline;
+/// await-only forwarding exercises async wrappers on a completed hot path.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class ForwardingPatternsBenchmarks
 {
-    [Params(1, 2, 4, 8, 16, 32, 64)]
-    public int Depth { get; set; }
+    private const int ForwardingIterations = 10_000;
 
     [Benchmark]
-    public Task<int> Task_DirectForwarding()
+    public long Task_DirectForwardingLoop()
     {
-        return TaskDirectForwarding(Depth);
-    }
+        long sum = 0;
 
-    [Benchmark]
-    public Task<int> Task_AwaitOnly()
-    {
-        return TaskAwaitOnly(Depth);
+        for (var i = 0; i < ForwardingIterations; i++)
+            sum += TaskDirectForwarding().GetAwaiter().GetResult();
+
+        return sum;
     }
 
     [Benchmark]
-    public ValueTask<int> ValueTask_DirectForwarding()
+    public async Task<long> Task_AwaitOnlyForwardingLoop()
     {
-        return ValueTaskDirectForwarding(Depth);
+        long sum = 0;
+
+        for (var i = 0; i < ForwardingIterations; i++)
+            sum += await TaskAwaitOnly();
+
+        return sum;
     }
 
     [Benchmark]
-    public ValueTask<int> ValueTask_AwaitOnly()
+    public long ValueTask_DirectForwardingLoop()
     {
-        return ValueTaskAwaitOnly(Depth);
+        long sum = 0;
+
+        for (var i = 0; i < ForwardingIterations; i++)
+            sum += ValueTaskDirectForwarding().GetAwaiter().GetResult();
+
+        return sum;
     }
 
-    private static Task<int> TaskDirectForwarding(int depth)
+    [Benchmark]
+    public async ValueTask<long> ValueTask_AwaitOnlyForwardingLoop()
     {
-        if (depth == 0)
-            return AsyncSources.CompletedTask;
+        long sum = 0;
 
-        return TaskDirectForwarding(depth - 1);
+        for (var i = 0; i < ForwardingIterations; i++)
+            sum += await ValueTaskAwaitOnly();
+
+        return sum;
     }
 
-    private static async Task<int> TaskAwaitOnly(int depth)
+    private static Task<int> TaskDirectForwarding()
     {
-        if (depth == 0)
-            return await AsyncSources.CompletedTask;
-
-        return await TaskAwaitOnly(depth - 1);
+        return AsyncSources.CompletedTask;
     }
 
-    private static ValueTask<int> ValueTaskDirectForwarding(int depth)
+    private static async Task<int> TaskAwaitOnly()
     {
-        if (depth == 0)
-            return AsyncSources.CompletedValueTask;
-
-        return ValueTaskDirectForwarding(depth - 1);
+        return await AsyncSources.CompletedTask;
     }
 
-    private static async ValueTask<int> ValueTaskAwaitOnly(int depth)
+    private static ValueTask<int> ValueTaskDirectForwarding()
     {
-        if (depth == 0)
-            return await AsyncSources.CompletedValueTask;
+        return AsyncSources.CompletedValueTask;
+    }
 
-        return await ValueTaskAwaitOnly(depth - 1);
+    private static async ValueTask<int> ValueTaskAwaitOnly()
+    {
+        return await AsyncSources.CompletedValueTask;
     }
 }

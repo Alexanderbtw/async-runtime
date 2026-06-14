@@ -1,59 +1,50 @@
 using Benchmark.Common;
 
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Order;
 
 namespace Benchmark;
 
 /// <summary>
-/// Вычисления на каждом этапе, но при этом гарантированно приостановка на каждом этапе,
-/// так что мы измеряем накладные расходы на приостановку и возобновление задач, а также передачу задач и await в условиях реальной приостановки.
+/// Repeated controlled suspension without Task.Yield or ThreadPool scheduler noise.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class ControlledSuspendedDepthBenchmarks
 {
-    [Params(1, 2, 4, 8, 16, 32, 64)]
-    public int Depth { get; set; }
+    private const int SuspendedIterations = 1_000;
 
     [Benchmark]
-    public Task<int> Task_ControlledSuspendedOnce()
+    public async Task<int> Task_ControlledSuspensionLoop()
     {
-        return TaskControlledSuspendedOnce(Depth);
+        var sum = 0;
+
+        for (var i = 0; i < SuspendedIterations; i++)
+            sum += await TaskSuspendOnce();
+
+        return sum;
     }
 
     [Benchmark]
-    public ValueTask<int> ValueTask_ControlledSuspendedOnce()
+    public async ValueTask<int> ValueTask_ControlledSuspensionLoop()
     {
-        return ValueTaskControlledSuspendedOnce(Depth);
+        var sum = 0;
+
+        for (var i = 0; i < SuspendedIterations; i++)
+            sum += await ValueTaskSuspendOnce();
+
+        return sum;
     }
 
-    private static async Task<int> TaskLeafControlledSuspendedOnce()
-    {
-        await AlwaysIncomplete.Yield(); // TOdo точно ли это что-то дает и отличается от forwarding?
-        return 1;
-    }
-
-    private static async ValueTask<int> ValueTaskLeafControlledSuspendedOnce()
+    private static async Task<int> TaskSuspendOnce()
     {
         await AlwaysIncomplete.Yield();
         return 1;
     }
 
-    private static async Task<int> TaskControlledSuspendedOnce(int depth)
+    private static async ValueTask<int> ValueTaskSuspendOnce()
     {
-        if (depth == 0)
-            return await TaskLeafControlledSuspendedOnce();
-
-        return 1 + await TaskControlledSuspendedOnce(depth - 1);
-    }
-
-    private static async ValueTask<int> ValueTaskControlledSuspendedOnce(int depth)
-    {
-        if (depth == 0)
-            return await ValueTaskLeafControlledSuspendedOnce();
-
-        return 1 + await ValueTaskControlledSuspendedOnce(depth - 1);
+        await AlwaysIncomplete.Yield();
+        return 1;
     }
 }

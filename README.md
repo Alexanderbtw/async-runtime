@@ -21,6 +21,8 @@ python3 -m venv .venv
 
 ## Run Benchmarks
 
+The active benchmark suite is presentation-oriented: each operation runs many completed awaits, controlled suspensions, live-state saves, or exception propagations. This intentionally amplifies per-await overhead so classic/runtime async differences are easier to see on slides.
+
 Run classic async:
 
 ```bash
@@ -64,6 +66,7 @@ Prefer a fresh `--out-dir` for each benchmark run so old PNG files are not mixed
 
 ## Reading Results
 
+- Treat current benchmark numbers as high-density hot-path results, not as the cost of a single business operation.
 - Prefer raw classic/runtime charts over speedup-only charts.
 - `Mean` is the main time metric for most benchmark families.
 - `Allocated` is the main metric for allocation-sensitive scenarios.

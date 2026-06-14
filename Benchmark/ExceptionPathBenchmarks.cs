@@ -8,74 +8,120 @@ using BenchmarkDotNet.Order;
 namespace Benchmark;
 
 /// <summary>
-/// Faulted async-chain propagation through await boundaries.
+/// High-density faulted async-chain propagation through await boundaries.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class ExceptionPathBenchmarks
 {
-    [Params(1, 2, 4, 8, 16, 32, 64)]
-    public int Depth { get; set; }
+    private const int ExceptionIterations = 1_000;
 
     [Benchmark]
-    public int Direct_ThrowChain_Control()
+    public int Direct_ThrowLoop_Control()
     {
-        try
+        var handled = 0;
+
+        for (var i = 0; i < ExceptionIterations; i++)
         {
-            return DirectThrowChain(Depth);
+            try
+            {
+                handled += DirectThrow();
+            }
+            catch (InvalidOperationException)
+            {
+                handled++;
+            }
         }
-        catch (InvalidOperationException)
-        {
-            return 1;
-        }
+
+        return handled;
     }
 
     [Benchmark]
-    public int Task_DirectFaultedForwardingChain()
+    public int Task_DirectFaultedForwardingLoop()
     {
-        return Consume(TaskDirectFaultedForwardingChain(Depth));
+        var handled = 0;
+
+        for (var i = 0; i < ExceptionIterations; i++)
+            handled += Consume(TaskDirectFaultedForwarding());
+
+        return handled;
     }
 
     [Benchmark]
-    public int Task_ThrowBeforeAwaitChain()
+    public int Task_ThrowBeforeAwaitLoop()
     {
-        return Consume(TaskThrowBeforeAwaitChain(Depth));
+        var handled = 0;
+
+        for (var i = 0; i < ExceptionIterations; i++)
+            handled += Consume(TaskThrowBeforeAwait());
+
+        return handled;
     }
 
     [Benchmark]
-    public int Task_ThrowAfterCompletedAwaitChain()
+    public int Task_ThrowAfterCompletedAwaitLoop()
     {
-        return Consume(TaskThrowAfterCompletedAwaitChain(Depth));
+        var handled = 0;
+
+        for (var i = 0; i < ExceptionIterations; i++)
+            handled += Consume(TaskThrowAfterCompletedAwait());
+
+        return handled;
     }
 
     [Benchmark]
-    public int Task_ThrowAfterSuspendedAwaitChain()
+    public int Task_ThrowAfterSuspendedAwaitLoop()
     {
-        return Consume(TaskThrowAfterSuspendedAwaitChain(Depth));
+        var handled = 0;
+
+        for (var i = 0; i < ExceptionIterations; i++)
+            handled += Consume(TaskThrowAfterSuspendedAwait());
+
+        return handled;
     }
 
     [Benchmark]
-    public int ValueTask_DirectFaultedForwardingChain()
+    public int ValueTask_DirectFaultedForwardingLoop()
     {
-        return Consume(ValueTaskDirectFaultedForwardingChain(Depth));
+        var handled = 0;
+
+        for (var i = 0; i < ExceptionIterations; i++)
+            handled += Consume(ValueTaskDirectFaultedForwarding());
+
+        return handled;
     }
 
     [Benchmark]
-    public int ValueTask_ThrowBeforeAwaitChain()
+    public int ValueTask_ThrowBeforeAwaitLoop()
     {
-        return Consume(ValueTaskThrowBeforeAwaitChain(Depth));
+        var handled = 0;
+
+        for (var i = 0; i < ExceptionIterations; i++)
+            handled += Consume(ValueTaskThrowBeforeAwait());
+
+        return handled;
     }
 
     [Benchmark]
-    public int ValueTask_ThrowAfterCompletedAwaitChain()
+    public int ValueTask_ThrowAfterCompletedAwaitLoop()
     {
-        return Consume(ValueTaskThrowAfterCompletedAwaitChain(Depth));
+        var handled = 0;
+
+        for (var i = 0; i < ExceptionIterations; i++)
+            handled += Consume(ValueTaskThrowAfterCompletedAwait());
+
+        return handled;
     }
 
     [Benchmark]
-    public int ValueTask_ThrowAfterSuspendedAwaitChain()
+    public int ValueTask_ThrowAfterSuspendedAwaitLoop()
     {
-        return Consume(ValueTaskThrowAfterSuspendedAwaitChain(Depth));
+        var handled = 0;
+
+        for (var i = 0; i < ExceptionIterations; i++)
+            handled += Consume(ValueTaskThrowAfterSuspendedAwait());
+
+        return handled;
     }
 
     private static int Consume(Task<int> task)
@@ -103,88 +149,57 @@ public class ExceptionPathBenchmarks
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static int DirectThrowChain(int depth)
+    private static int DirectThrow()
     {
-        if (depth == 0)
-            return ThrowFault();
-
-        return DirectThrowChain(depth - 1);
+        return ThrowFault();
     }
 
-    private static Task<int> TaskDirectFaultedForwardingChain(int depth)
+    private static Task<int> TaskDirectFaultedForwarding()
     {
-        if (depth == 0)
-            return Task.FromException<int>(CreateFault());
-
-        return TaskDirectFaultedForwardingChain(depth - 1);
+        return Task.FromException<int>(CreateFault());
     }
 
-    private static ValueTask<int> ValueTaskDirectFaultedForwardingChain(int depth)
+    private static ValueTask<int> ValueTaskDirectFaultedForwarding()
     {
-        if (depth == 0)
-            return new ValueTask<int>(Task.FromException<int>(CreateFault()));
-
-        return ValueTaskDirectFaultedForwardingChain(depth - 1);
+        return new ValueTask<int>(Task.FromException<int>(CreateFault()));
     }
 
-    private static async Task<int> TaskThrowBeforeAwaitChain(int depth)
+    private static async Task<int> TaskThrowBeforeAwait()
     {
-        if (depth == 0)
-            return ThrowFault();
-
-        return await TaskThrowBeforeAwaitChain(depth - 1);
+        var result = ThrowFault();
+        await Task.CompletedTask;
+        return result;
     }
 
-    private static async Task<int> TaskThrowAfterCompletedAwaitChain(int depth)
+    private static async Task<int> TaskThrowAfterCompletedAwait()
     {
-        if (depth == 0)
-        {
-            await AsyncSources.CompletedTask;
-            return ThrowFault();
-        }
-
-        return await TaskThrowAfterCompletedAwaitChain(depth - 1);
+        await AsyncSources.CompletedTask;
+        return ThrowFault();
     }
 
-    private static async Task<int> TaskThrowAfterSuspendedAwaitChain(int depth)
+    private static async Task<int> TaskThrowAfterSuspendedAwait()
     {
-        if (depth == 0)
-        {
-            await AlwaysIncomplete.Yield();
-            return ThrowFault();
-        }
-
-        return await TaskThrowAfterSuspendedAwaitChain(depth - 1);
+        await AlwaysIncomplete.Yield();
+        return ThrowFault();
     }
 
-    private static async ValueTask<int> ValueTaskThrowBeforeAwaitChain(int depth)
+    private static async ValueTask<int> ValueTaskThrowBeforeAwait()
     {
-        if (depth == 0)
-            return ThrowFault();
-
-        return await ValueTaskThrowBeforeAwaitChain(depth - 1);
+        var result = ThrowFault();
+        await new ValueTask();
+        return result;
     }
 
-    private static async ValueTask<int> ValueTaskThrowAfterCompletedAwaitChain(int depth)
+    private static async ValueTask<int> ValueTaskThrowAfterCompletedAwait()
     {
-        if (depth == 0)
-        {
-            await AsyncSources.CompletedValueTask;
-            return ThrowFault();
-        }
-
-        return await ValueTaskThrowAfterCompletedAwaitChain(depth - 1);
+        await AsyncSources.CompletedValueTask;
+        return ThrowFault();
     }
 
-    private static async ValueTask<int> ValueTaskThrowAfterSuspendedAwaitChain(int depth)
+    private static async ValueTask<int> ValueTaskThrowAfterSuspendedAwait()
     {
-        if (depth == 0)
-        {
-            await AlwaysIncomplete.Yield();
-            return ThrowFault();
-        }
-
-        return await ValueTaskThrowAfterSuspendedAwaitChain(depth - 1);
+        await AlwaysIncomplete.Yield();
+        return ThrowFault();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

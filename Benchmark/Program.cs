@@ -15,6 +15,7 @@ var artifactsPath =
 #endif
 
 ManualConfig config = DefaultConfig.Instance
+    .AddJob(Job.ShortRun)
     .HideColumns(columns: [StatisticColumn.Error])
     .AddExporter(MarkdownExporter.GitHub)
     .AddExporter(CsvExporter.Default)
@@ -22,6 +23,9 @@ ManualConfig config = DefaultConfig.Instance
 
 BenchmarkSwitcher.FromTypes(
 [
-    typeof(TaskAllocationBenchmarks),
-    typeof(TaskTimeoutBenchmarks)
+    typeof(CompletedChainDepthBenchmarks),
+    typeof(ForwardingPatternsBenchmarks),
+    typeof(ControlledSuspendedDepthBenchmarks),
+    typeof(ControlledLiveStateBenchmarks),
+    typeof(ExceptionPathBenchmarks)
 ]).Run(args, config);

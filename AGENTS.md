@@ -25,6 +25,8 @@ dotnet build Benchmark/Benchmark.csproj -c AsyncRuntime
 
 ## Benchmark Results
 
+The active `Benchmark/Program.cs` suite is intentionally high-density and presentation-oriented. One benchmark operation may run thousands of awaits, controlled suspensions, live-state payload saves, or exception propagations so small async-model overheads become visible. Do not describe these numbers as single-operation latency.
+
 BenchmarkDotNet results are expected under:
 
 - `Benchmark/BenchmarkDotNet.Artifacts.Standard/results`

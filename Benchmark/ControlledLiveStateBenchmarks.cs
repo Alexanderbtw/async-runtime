@@ -6,115 +6,79 @@ using BenchmarkDotNet.Order;
 namespace Benchmark;
 
 /// <summary>
-/// Forced suspend/resume with controlled live and dead value-type payloads.
+/// High-density controlled live/dead state scenarios with a large value-type payload.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class ControlledLiveStateBenchmarks
 {
-    [Params(0, 1, 4, 8, 16, 32, 64, 128)]
-    public int PayloadValues { get; set; }
+    private const int LiveStateIterations = 1_000;
+    private const int PayloadStride = 256;
 
     [Benchmark]
-    public Task<int> Task_DeadBeforeAwait_Control()
+    public async Task<long> Task_DeadBeforeAwait_ControlLoop()
     {
-        return PayloadValues switch
-        {
-            0 => TaskDeadBeforeAwaitControl(EmptyPayload.Create()),
-            1 => TaskDeadBeforeAwaitControl(Payload1.Create()),
-            4 => TaskDeadBeforeAwaitControl(Payload4.Create()),
-            8 => TaskDeadBeforeAwaitControl(Payload8.Create()),
-            16 => TaskDeadBeforeAwaitControl(Payload16.Create()),
-            32 => TaskDeadBeforeAwaitControl(Payload32.Create()),
-            64 => TaskDeadBeforeAwaitControl(Payload64.Create()),
-            128 => TaskDeadBeforeAwaitControl(Payload128.Create()),
-            _ => throw new ArgumentOutOfRangeException(nameof(PayloadValues), PayloadValues, null)
-        };
+        long sum = 0;
+
+        for (var i = 0; i < LiveStateIterations; i++)
+            sum += await TaskDeadBeforeAwaitControl(Payload128.Create(i * PayloadStride));
+
+        return sum;
     }
 
     [Benchmark]
-    public Task<int> Task_OneAwait_LiveState()
+    public async Task<long> Task_OneAwait_LiveStateLoop()
     {
-        return PayloadValues switch
-        {
-            0 => TaskOneAwaitLiveState(EmptyPayload.Create()),
-            1 => TaskOneAwaitLiveState(Payload1.Create()),
-            4 => TaskOneAwaitLiveState(Payload4.Create()),
-            8 => TaskOneAwaitLiveState(Payload8.Create()),
-            16 => TaskOneAwaitLiveState(Payload16.Create()),
-            32 => TaskOneAwaitLiveState(Payload32.Create()),
-            64 => TaskOneAwaitLiveState(Payload64.Create()),
-            128 => TaskOneAwaitLiveState(Payload128.Create()),
-            _ => throw new ArgumentOutOfRangeException(nameof(PayloadValues), PayloadValues, null)
-        };
+        long sum = 0;
+
+        for (var i = 0; i < LiveStateIterations; i++)
+            sum += await TaskOneAwaitLiveState(Payload128.Create(i * PayloadStride));
+
+        return sum;
     }
 
     [Benchmark]
-    public Task<int> Task_TwoAwaits_DisjointState()
+    public async Task<long> Task_TwoAwaits_DisjointStateLoop()
     {
-        return PayloadValues switch
-        {
-            0 => TaskTwoAwaitsDisjointState(EmptyPayload.Create()),
-            1 => TaskTwoAwaitsDisjointState(Payload1.Create()),
-            4 => TaskTwoAwaitsDisjointState(Payload4.Create()),
-            8 => TaskTwoAwaitsDisjointState(Payload8.Create()),
-            16 => TaskTwoAwaitsDisjointState(Payload16.Create()),
-            32 => TaskTwoAwaitsDisjointState(Payload32.Create()),
-            64 => TaskTwoAwaitsDisjointState(Payload64.Create()),
-            128 => TaskTwoAwaitsDisjointState(Payload128.Create()),
-            _ => throw new ArgumentOutOfRangeException(nameof(PayloadValues), PayloadValues, null)
-        };
+        long sum = 0;
+
+        for (var i = 0; i < LiveStateIterations; i++)
+            sum += await TaskTwoAwaitsDisjointState(Payload128.Create(i * PayloadStride));
+
+        return sum;
     }
 
     [Benchmark]
-    public ValueTask<int> ValueTask_DeadBeforeAwait_Control()
+    public async ValueTask<long> ValueTask_DeadBeforeAwait_ControlLoop()
     {
-        return PayloadValues switch
-        {
-            0 => ValueTaskDeadBeforeAwaitControl(EmptyPayload.Create()),
-            1 => ValueTaskDeadBeforeAwaitControl(Payload1.Create()),
-            4 => ValueTaskDeadBeforeAwaitControl(Payload4.Create()),
-            8 => ValueTaskDeadBeforeAwaitControl(Payload8.Create()),
-            16 => ValueTaskDeadBeforeAwaitControl(Payload16.Create()),
-            32 => ValueTaskDeadBeforeAwaitControl(Payload32.Create()),
-            64 => ValueTaskDeadBeforeAwaitControl(Payload64.Create()),
-            128 => ValueTaskDeadBeforeAwaitControl(Payload128.Create()),
-            _ => throw new ArgumentOutOfRangeException(nameof(PayloadValues), PayloadValues, null)
-        };
+        long sum = 0;
+
+        for (var i = 0; i < LiveStateIterations; i++)
+            sum += await ValueTaskDeadBeforeAwaitControl(Payload128.Create(i * PayloadStride));
+
+        return sum;
     }
 
     [Benchmark]
-    public ValueTask<int> ValueTask_OneAwait_LiveState()
+    public async ValueTask<long> ValueTask_OneAwait_LiveStateLoop()
     {
-        return PayloadValues switch
-        {
-            0 => ValueTaskOneAwaitLiveState(EmptyPayload.Create()),
-            1 => ValueTaskOneAwaitLiveState(Payload1.Create()),
-            4 => ValueTaskOneAwaitLiveState(Payload4.Create()),
-            8 => ValueTaskOneAwaitLiveState(Payload8.Create()),
-            16 => ValueTaskOneAwaitLiveState(Payload16.Create()),
-            32 => ValueTaskOneAwaitLiveState(Payload32.Create()),
-            64 => ValueTaskOneAwaitLiveState(Payload64.Create()),
-            128 => ValueTaskOneAwaitLiveState(Payload128.Create()),
-            _ => throw new ArgumentOutOfRangeException(nameof(PayloadValues), PayloadValues, null)
-        };
+        long sum = 0;
+
+        for (var i = 0; i < LiveStateIterations; i++)
+            sum += await ValueTaskOneAwaitLiveState(Payload128.Create(i * PayloadStride));
+
+        return sum;
     }
 
     [Benchmark]
-    public ValueTask<int> ValueTask_TwoAwaits_DisjointState()
+    public async ValueTask<long> ValueTask_TwoAwaits_DisjointStateLoop()
     {
-        return PayloadValues switch
-        {
-            0 => ValueTaskTwoAwaitsDisjointState(EmptyPayload.Create()),
-            1 => ValueTaskTwoAwaitsDisjointState(Payload1.Create()),
-            4 => ValueTaskTwoAwaitsDisjointState(Payload4.Create()),
-            8 => ValueTaskTwoAwaitsDisjointState(Payload8.Create()),
-            16 => ValueTaskTwoAwaitsDisjointState(Payload16.Create()),
-            32 => ValueTaskTwoAwaitsDisjointState(Payload32.Create()),
-            64 => ValueTaskTwoAwaitsDisjointState(Payload64.Create()),
-            128 => ValueTaskTwoAwaitsDisjointState(Payload128.Create()),
-            _ => throw new ArgumentOutOfRangeException(nameof(PayloadValues), PayloadValues, null)
-        };
+        long sum = 0;
+
+        for (var i = 0; i < LiveStateIterations; i++)
+            sum += await ValueTaskTwoAwaitsDisjointState(Payload128.Create(i * PayloadStride));
+
+        return sum;
     }
 
     private static async Task<int> TaskDeadBeforeAwaitControl<TPayload>(TPayload dead)
@@ -190,39 +154,6 @@ public class ControlledLiveStateBenchmarks
         static abstract TSelf Create(int offset = 0);
 
         int Sum();
-    }
-
-    private readonly struct EmptyPayload : ILiveStatePayload<EmptyPayload>
-    {
-        public static EmptyPayload Create(int offset = 0)
-        {
-            return new EmptyPayload();
-        }
-
-        public int Sum()
-        {
-            return AsyncSources.ExpensiveOrSideEffect(0);
-        }
-    }
-
-    private readonly struct Payload1 : ILiveStatePayload<Payload1>
-    {
-        private readonly int _x1;
-
-        private Payload1(int x1)
-        {
-            _x1 = x1;
-        }
-
-        public static Payload1 Create(int offset = 0)
-        {
-            return new Payload1(Value(offset + 1));
-        }
-
-        public int Sum()
-        {
-            return _x1;
-        }
     }
 
     private readonly struct Payload4 : ILiveStatePayload<Payload4>

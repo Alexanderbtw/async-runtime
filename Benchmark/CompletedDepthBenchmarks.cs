@@ -1,46 +1,71 @@
 using Benchmark.Common;
 
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Order;
 
 namespace Benchmark;
 
 /// <summary>
-/// Вычисления на каждом этапе, но все задачи уже завершены, так что нет приостановки
+/// High-density completed async path. One benchmark operation performs many
+/// completed awaits so small per-await overhead becomes visible.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class CompletedChainDepthBenchmarks
 {
-    [Params(1, 2, 4, 8, 16, 32, 64)]
-    public int Depth { get; set; }
+    private const int CompletedIterations = 10_000;
 
     [Benchmark]
-    public Task<int> Task_Completed()
+    public async Task<int> Task_ListFromResultNestedLoop()
     {
-        return TaskCompleted(Depth);
+        var data = new List<int>(CompletedIterations);
+
+        for (var i = 0; i < CompletedIterations; i++)
+            data.Add(await GetTaskFromResultAsync(i));
+
+        return data[^1];
     }
 
     [Benchmark]
-    public ValueTask<int> ValueTask_Completed()
+    public async ValueTask<int> ValueTask_ListFromResultNestedLoop()
     {
-        return ValueTaskCompleted(Depth);
+        var data = new List<int>(CompletedIterations);
+
+        for (var i = 0; i < CompletedIterations; i++)
+            data.Add(await GetValueTaskFromResultAsync(i));
+
+        return data[^1];
     }
 
-    private static async Task<int> TaskCompleted(int depth)
+    [Benchmark]
+    public async Task<long> Task_CachedCompletedLoop()
     {
-        if (depth == 0)
-            return await AsyncSources.CompletedTask;
+        long sum = 0;
 
-        return 1 + await TaskCompleted(depth - 1);
+        for (var i = 0; i < CompletedIterations; i++)
+            sum += await AsyncSources.CompletedTask;
+
+        return sum;
     }
 
-    private static async ValueTask<int> ValueTaskCompleted(int depth)
+    [Benchmark]
+    public async ValueTask<long> ValueTask_CachedCompletedLoop()
     {
-        if (depth == 0)
-            return await AsyncSources.CompletedValueTask;
+        long sum = 0;
 
-        return 1 + await ValueTaskCompleted(depth - 1);
+        for (var i = 0; i < CompletedIterations; i++)
+            sum += await AsyncSources.CompletedValueTask;
+
+        return sum;
+    }
+
+    private static async Task<int> GetTaskFromResultAsync(int value)
+    {
+        return await Task.FromResult(AsyncSources.ExpensiveOrSideEffect(value));
+    }
+
+    private static async ValueTask<int> GetValueTaskFromResultAsync(int value)
+    {
+        return await new ValueTask<int>(AsyncSources.ExpensiveOrSideEffect(value));
     }
 }
