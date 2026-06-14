@@ -6,11 +6,15 @@ using BenchmarkDotNet.Order;
 
 namespace Benchmark;
 
+/// <summary>
+/// Простая цепочка прямой передачи задач без вычислений и без приостановки,
+/// чтобы измерить накладные расходы на передачу задач и await без фактического переключения контекста или выполнения кода между ними.
+/// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class ForwardingPatternsBenchmarks
 {
-    [Params(1, 2, 4, 8, 16, 32)]
+    [Params(1, 2, 4, 8, 16, 32, 64)]
     public int Depth { get; set; }
 
     [Benchmark]
@@ -26,12 +30,6 @@ public class ForwardingPatternsBenchmarks
     }
 
     [Benchmark]
-    public Task<int> Task_AddAfterAwait()
-    {
-        return TaskAddAfterAwait(Depth);
-    }
-
-    [Benchmark]
     public ValueTask<int> ValueTask_DirectForwarding()
     {
         return ValueTaskDirectForwarding(Depth);
@@ -41,12 +39,6 @@ public class ForwardingPatternsBenchmarks
     public ValueTask<int> ValueTask_AwaitOnly()
     {
         return ValueTaskAwaitOnly(Depth);
-    }
-
-    [Benchmark]
-    public ValueTask<int> ValueTask_AddAfterAwait()
-    {
-        return ValueTaskAddAfterAwait(Depth);
     }
 
     private static Task<int> TaskDirectForwarding(int depth)
@@ -65,14 +57,6 @@ public class ForwardingPatternsBenchmarks
         return await TaskAwaitOnly(depth - 1);
     }
 
-    private static async Task<int> TaskAddAfterAwait(int depth)
-    {
-        if (depth == 0)
-            return await AsyncSources.CompletedTask;
-
-        return 1 + await TaskAddAfterAwait(depth - 1);
-    }
-
     private static ValueTask<int> ValueTaskDirectForwarding(int depth)
     {
         if (depth == 0)
@@ -87,13 +71,5 @@ public class ForwardingPatternsBenchmarks
             return await AsyncSources.CompletedValueTask;
 
         return await ValueTaskAwaitOnly(depth - 1);
-    }
-
-    private static async ValueTask<int> ValueTaskAddAfterAwait(int depth)
-    {
-        if (depth == 0)
-            return await AsyncSources.CompletedValueTask;
-
-        return 1 + await ValueTaskAddAfterAwait(depth - 1);
     }
 }

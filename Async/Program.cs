@@ -1,6 +1,11 @@
 ﻿using System.Diagnostics;
 
+using Async;
+
 #pragma warning disable CS8321 // Local function is declared but never used
+
+await Alloc.Start();
+return;
 
 int r = await Outer();
 Console.WriteLine(r);

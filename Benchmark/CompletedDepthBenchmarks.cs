@@ -6,11 +6,14 @@ using BenchmarkDotNet.Order;
 
 namespace Benchmark;
 
+/// <summary>
+/// Вычисления на каждом этапе, но все задачи уже завершены, так что нет приостановки
+/// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class CompletedChainDepthBenchmarks
 {
-    [Params(1, 2, 4, 8, 16, 32)]
+    [Params(1, 2, 4, 8, 16, 32, 64)]
     public int Depth { get; set; }
 
     [Benchmark]

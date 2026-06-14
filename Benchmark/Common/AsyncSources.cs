@@ -12,6 +12,12 @@ public static class AsyncSources
     [MethodImpl(MethodImplOptions.NoInlining)]
     public static int ExpensiveOrSideEffect()
     {
-        return 42;
+        return ExpensiveOrSideEffect(0);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static int ExpensiveOrSideEffect(int value)
+    {
+        return value + 42;
     }
 }
