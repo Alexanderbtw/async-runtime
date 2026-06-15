@@ -6,7 +6,8 @@ using BenchmarkDotNet.Order;
 namespace Benchmark;
 
 /// <summary>
-/// High-density controlled live/dead state scenarios with a large value-type payload.
+/// Меряет влияние живого состояния через await с большим value-type payload.
+/// Сравнивает dead-before-await, live-after-await и disjoint-state сценарии, чтобы оценить стоимость сохранения locals/state.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]

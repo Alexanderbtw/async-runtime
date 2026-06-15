@@ -39,7 +39,7 @@ To generate comparison charts from existing CSV reports:
   --standard-dir Benchmark/BenchmarkDotNet.Artifacts.Standard/results \
   --runtime-dir Benchmark/BenchmarkDotNet.Artifacts.AsyncRuntime/results \
   --out-dir artifacts/async-comparison-$(date +%Y%m%d) \
-  --metrics Mean,Median,Error,StdDev,Allocated,Gen0 \
+  --metrics Mean,Allocated \
   --include-derived
 ```
 
@@ -48,6 +48,8 @@ The important outputs are:
 - `benchmark-comparison.csv`
 - `manifest.csv`
 - `benchmarks/<BenchmarkName>/<Metric>.png`
+
+For audit charts, `--metrics Mean,Median,Error,StdDev,Allocated,Gen0,Gen1` remains supported.
 
 ## Interpreting Results
 

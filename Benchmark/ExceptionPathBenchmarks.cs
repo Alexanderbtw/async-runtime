@@ -8,7 +8,8 @@ using BenchmarkDotNet.Order;
 namespace Benchmark;
 
 /// <summary>
-/// High-density faulted async-chain propagation through await boundaries.
+/// Меряет propagation исключений через async boundaries: before await, after completed await, after suspended await и direct faulted forwarding.
+/// Это проверка exception-path overhead, где стоимость самих исключений может доминировать над эффектом async-модели.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]

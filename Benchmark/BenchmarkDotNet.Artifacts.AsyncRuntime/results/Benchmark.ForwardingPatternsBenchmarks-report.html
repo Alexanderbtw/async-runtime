@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.ForwardingPatternsBenchmarks-20260614-072133</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, macOS 26.4.1 (25E253) [Darwin 25.4.0]
+Apple M3 Pro, 1 CPU, 11 logical and 11 physical cores
+.NET SDK 11.0.100-preview.4.26230.115
+  [Host]     : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                     </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>ValueTask_DirectForwardingLoop</td><td>2.724 &mu;s</td><td>0.0637 &mu;s</td><td>0.1880 &mu;s</td><td>2.668 &mu;s</td><td>-</td><td>-</td>
+</tr><tr><td>Task_DirectForwardingLoop</td><td>5.766 &mu;s</td><td>0.1087 &mu;s</td><td>0.1163 &mu;s</td><td>5.734 &mu;s</td><td>-</td><td>-</td>
+</tr><tr><td>ValueTask_AwaitOnlyForwardingLoop</td><td>44.858 &mu;s</td><td>0.8931 &mu;s</td><td>2.2075 &mu;s</td><td>44.076 &mu;s</td><td>-</td><td>-</td>
+</tr><tr><td>Task_AwaitOnlyForwardingLoop</td><td>80.679 &mu;s</td><td>1.6060 &mu;s</td><td>2.8547 &mu;s</td><td>80.498 &mu;s</td><td>86.0596</td><td>720072 B</td>
+</tr></tbody></table>
+</body>
+</html>

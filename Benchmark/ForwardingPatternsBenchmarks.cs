@@ -6,8 +6,8 @@ using BenchmarkDotNet.Order;
 namespace Benchmark;
 
 /// <summary>
-/// High-density forwarding patterns. Direct forwarding is a non-async baseline;
-/// await-only forwarding exercises async wrappers on a completed hot path.
+/// Сравнивает direct forwarding без async с await-only forwarding поверх completed source.
+/// Это baseline/guardrail для цены лишнего async/await там, где можно вернуть готовый Task/ValueTask напрямую.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]

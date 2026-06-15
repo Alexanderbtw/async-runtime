@@ -6,7 +6,8 @@ using BenchmarkDotNet.Order;
 namespace Benchmark;
 
 /// <summary>
-/// Repeated controlled suspension without Task.Yield or ThreadPool scheduler noise.
+/// Меряет controlled suspension/resumption без Task.Yield, ThreadPool и scheduler noise.
+/// Awaitable всегда сначала не завершен, но continuation вызывается синхронно, поэтому изолируется стоимость await-boundary.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]

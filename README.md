@@ -51,7 +51,7 @@ Do not rerun BenchmarkDotNet just to visualize existing results. Generate charts
   --standard-dir Benchmark/BenchmarkDotNet.Artifacts.Standard/results \
   --runtime-dir Benchmark/BenchmarkDotNet.Artifacts.AsyncRuntime/results \
   --out-dir artifacts/async-comparison-$(date +%Y%m%d) \
-  --metrics Mean,Median,Error,StdDev,Allocated,Gen0 \
+  --metrics Mean,Allocated \
   --include-derived
 ```
 
@@ -63,6 +63,7 @@ Outputs:
 - `benchmarks/<BenchmarkName>/<Metric>-derived.png` - speedup/delta charts when `--include-derived` is used.
 
 Prefer a fresh `--out-dir` for each benchmark run so old PNG files are not mixed with new results.
+For audit charts, the expanded metric set remains supported via `--metrics Mean,Median,Error,StdDev,Allocated,Gen0,Gen1`.
 
 ## Reading Results
 
@@ -95,7 +96,7 @@ If a size CSV is available, pass it to the visualizer:
   --standard-dir Benchmark/BenchmarkDotNet.Artifacts.Standard/results \
   --runtime-dir Benchmark/BenchmarkDotNet.Artifacts.AsyncRuntime/results \
   --out-dir artifacts/async-comparison-$(date +%Y%m%d) \
-  --metrics Mean,Median,Error,StdDev,Allocated,Gen0 \
+  --metrics Mean,Allocated \
   --include-derived \
   --size-csv artifacts/async-comparison/parktronik-size.csv
 ```

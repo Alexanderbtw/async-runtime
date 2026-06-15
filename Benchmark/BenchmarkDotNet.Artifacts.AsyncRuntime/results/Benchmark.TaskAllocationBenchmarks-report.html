@@ -1,8 +1,8 @@
-о<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>Benchmark.TaskAllocationBenchmarks-20260613-024532</title>
+<title>Benchmark.TaskAllocationBenchmarks-20260614-073647</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -22,14 +22,14 @@ Apple M3 Pro, 1 CPU, 11 logical and 11 physical cores
 <pre><code></code></pre>
 
 <table>
-<thead><tr><th>Method   </th><th>Mean  </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method   </th><th>Mean  </th><th>Error</th><th>StdDev</th><th>Median</th><th>Ratio</th><th>RatioSD</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>Task_Sync</td><td>5.841 ns</td><td>0.0202 ns</td><td>1.00</td><td>0.00</td><td>0.0086</td><td>72 B</td><td>1.00</td>
-</tr><tr><td>ValueTask_Sync</td><td>2.228 ns</td><td>0.0295 ns</td><td>0.38</td><td>0.01</td><td>-</td><td>-</td><td>0.00</td>
-</tr><tr><td>Pooling_Sync</td><td>2.204 ns</td><td>0.0283 ns</td><td>0.38</td><td>0.00</td><td>-</td><td>-</td><td>0.00</td>
-</tr><tr><td>Task_Yield</td><td>981.153 ns</td><td>43.1272 ns</td><td>167.99</td><td>7.35</td><td>0.0114</td><td>96 B</td><td>1.33</td>
-</tr><tr><td>ValueTask_Yield</td><td>1,070.439 ns</td><td>42.7025 ns</td><td>183.27</td><td>7.27</td><td>0.0114</td><td>104 B</td><td>1.44</td>
-</tr><tr><td>Pooling_Yield</td><td>938.601 ns</td><td>16.2351 ns</td><td>160.70</td><td>2.74</td><td>-</td><td>-</td><td>0.00</td>
+</thead><tbody><tr><td>Task_Sync</td><td>5.529 ns</td><td>0.1329 ns</td><td>0.1178 ns</td><td>5.501 ns</td><td>1.00</td><td>0.03</td><td>0.0086</td><td>72 B</td><td>1.00</td>
+</tr><tr><td>ValueTask_Sync</td><td>2.097 ns</td><td>0.0278 ns</td><td>0.0232 ns</td><td>2.103 ns</td><td>0.38</td><td>0.01</td><td>-</td><td>-</td><td>0.00</td>
+</tr><tr><td>Pooling_Sync</td><td>2.096 ns</td><td>0.0151 ns</td><td>0.0134 ns</td><td>2.091 ns</td><td>0.38</td><td>0.01</td><td>-</td><td>-</td><td>0.00</td>
+</tr><tr><td>Task_Yield</td><td>925.900 ns</td><td>18.3137 ns</td><td>43.1676 ns</td><td>924.535 ns</td><td>167.54</td><td>8.47</td><td>0.0114</td><td>96 B</td><td>1.33</td>
+</tr><tr><td>ValueTask_Yield</td><td>1,072.774 ns</td><td>36.3297 ns</td><td>107.1190 ns</td><td>1,000.295 ns</td><td>194.12</td><td>19.70</td><td>0.0114</td><td>104 B</td><td>1.44</td>
+</tr><tr><td>Pooling_Yield</td><td>896.893 ns</td><td>17.7827 ns</td><td>34.2612 ns</td><td>893.777 ns</td><td>162.30</td><td>6.97</td><td>-</td><td>-</td><td>0.00</td>
 </tr></tbody></table>
 </body>
 </html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.ControlledLiveStateBenchmarks-20260614-072605</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, macOS 26.4.1 (25E253) [Darwin 25.4.0]
+Apple M3 Pro, 1 CPU, 11 logical and 11 physical cores
+.NET SDK 11.0.100-preview.4.26230.115
+  [Host]     : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                         </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>ValueTask_OneAwait_LiveStateLoop</td><td>324.1 &mu;s</td><td>2.74 &mu;s</td><td>2.14 &mu;s</td><td>81.0547</td><td>-</td><td>664.06 KB</td>
+</tr><tr><td>Task_DeadBeforeAwait_ControlLoop</td><td>329.6 &mu;s</td><td>6.17 &mu;s</td><td>10.97 &mu;s</td><td>80.0781</td><td>-</td><td>656.32 KB</td>
+</tr><tr><td>Task_OneAwait_LiveStateLoop</td><td>339.3 &mu;s</td><td>2.81 &mu;s</td><td>2.63 &mu;s</td><td>80.0781</td><td>-</td><td>656.32 KB</td>
+</tr><tr><td>ValueTask_DeadBeforeAwait_ControlLoop</td><td>359.2 &mu;s</td><td>6.63 &mu;s</td><td>6.51 &mu;s</td><td>81.0547</td><td>-</td><td>664.06 KB</td>
+</tr><tr><td>ValueTask_TwoAwaits_DisjointStateLoop</td><td>795.1 &mu;s</td><td>12.17 &mu;s</td><td>10.79 &mu;s</td><td>141.6016</td><td>0.9766</td><td>1164.06 KB</td>
+</tr><tr><td>Task_TwoAwaits_DisjointStateLoop</td><td>887.9 &mu;s</td><td>16.16 &mu;s</td><td>30.36 &mu;s</td><td>140.6250</td><td>0.9766</td><td>1156.32 KB</td>
+</tr></tbody></table>
+</body>
+</html>

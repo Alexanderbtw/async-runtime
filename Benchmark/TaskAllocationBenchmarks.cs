@@ -3,6 +3,11 @@ using BenchmarkDotNet.Attributes;
 
 namespace Benchmark;
 
+// https://github.com/dotnet/roslyn/issues/84061
+/// <summary>
+/// Диагностические микробенчмарки аллокаций для Task, ValueTask и pooling builder на sync-completed и Task.Yield paths.
+/// Task.Yield включает scheduler/continuation behavior, поэтому этот класс не является основным proof для runtime async.
+/// </summary>
 [MemoryDiagnoser]
 public class TaskAllocationBenchmarks
 {

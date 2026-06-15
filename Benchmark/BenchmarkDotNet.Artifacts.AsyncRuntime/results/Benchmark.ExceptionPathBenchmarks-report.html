@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.ExceptionPathBenchmarks-20260614-072854</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, macOS 26.4.1 (25E253) [Darwin 25.4.0]
+Apple M3 Pro, 1 CPU, 11 logical and 11 physical cores
+.NET SDK 11.0.100-preview.4.26230.115
+  [Host]     : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                          </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Direct_ThrowLoop_Control</td><td>934.3 &mu;s</td><td>18.68 &mu;s</td><td>40.21 &mu;s</td><td>923.1 &mu;s</td><td>57.6172</td><td>476.56 KB</td>
+</tr><tr><td>Task_DirectFaultedForwardingLoop</td><td>1,060.9 &mu;s</td><td>7.87 &mu;s</td><td>6.97 &mu;s</td><td>1,061.4 &mu;s</td><td>95.7031</td><td>789.06 KB</td>
+</tr><tr><td>ValueTask_DirectFaultedForwardingLoop</td><td>1,161.3 &mu;s</td><td>23.21 &mu;s</td><td>44.16 &mu;s</td><td>1,174.0 &mu;s</td><td>95.7031</td><td>789.06 KB</td>
+</tr><tr><td>Task_ThrowAfterCompletedAwaitLoop</td><td>1,870.9 &mu;s</td><td>35.77 &mu;s</td><td>47.75 &mu;s</td><td>1,885.2 &mu;s</td><td>146.4844</td><td>1203.13 KB</td>
+</tr><tr><td>Task_ThrowAfterSuspendedAwaitLoop</td><td>1,883.7 &mu;s</td><td>31.11 &mu;s</td><td>25.98 &mu;s</td><td>1,878.1 &mu;s</td><td>156.2500</td><td>1289.06 KB</td>
+</tr><tr><td>ValueTask_ThrowBeforeAwaitLoop</td><td>1,911.4 &mu;s</td><td>34.11 &mu;s</td><td>64.07 &mu;s</td><td>1,880.4 &mu;s</td><td>146.4844</td><td>1203.13 KB</td>
+</tr><tr><td>Task_ThrowBeforeAwaitLoop</td><td>1,934.9 &mu;s</td><td>38.68 &mu;s</td><td>95.62 &mu;s</td><td>1,931.9 &mu;s</td><td>146.4844</td><td>1203.13 KB</td>
+</tr><tr><td>ValueTask_ThrowAfterCompletedAwaitLoop</td><td>1,954.6 &mu;s</td><td>38.93 &mu;s</td><td>96.94 &mu;s</td><td>1,938.6 &mu;s</td><td>144.5313</td><td>1203.13 KB</td>
+</tr><tr><td>ValueTask_ThrowAfterSuspendedAwaitLoop</td><td>1,966.0 &mu;s</td><td>39.29 &mu;s</td><td>115.24 &mu;s</td><td>1,904.6 &mu;s</td><td>158.2031</td><td>1296.88 KB</td>
+</tr></tbody></table>
+</body>
+</html>

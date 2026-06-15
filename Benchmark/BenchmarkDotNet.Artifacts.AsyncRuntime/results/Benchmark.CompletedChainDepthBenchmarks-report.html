@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.CompletedChainDepthBenchmarks-20260614-071746</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, macOS 26.4.1 (25E253) [Darwin 25.4.0]
+Apple M3 Pro, 1 CPU, 11 logical and 11 physical cores
+.NET SDK 11.0.100-preview.4.26230.115
+  [Host]     : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                      </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>ValueTask_CachedCompletedLoop</td><td>13.52 &mu;s</td><td>0.690 &mu;s</td><td>2.001 &mu;s</td><td>-</td><td>-</td><td>-</td>
+</tr><tr><td>Task_CachedCompletedLoop</td><td>18.42 &mu;s</td><td>0.439 &mu;s</td><td>1.279 &mu;s</td><td>-</td><td>-</td><td>72 B</td>
+</tr><tr><td>ValueTask_ListFromResultNestedLoop</td><td>57.97 &mu;s</td><td>1.145 &mu;s</td><td>1.913 &mu;s</td><td>4.7607</td><td>0.5493</td><td>40056 B</td>
+</tr><tr><td>Task_ListFromResultNestedLoop</td><td>126.69 &mu;s</td><td>2.332 &mu;s</td><td>2.181 &mu;s</td><td>176.7578</td><td>25.1465</td><td>1480128 B</td>
+</tr></tbody></table>
+</body>
+</html>

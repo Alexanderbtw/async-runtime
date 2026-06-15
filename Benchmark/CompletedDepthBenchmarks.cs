@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using Benchmark.Common;
 
 using BenchmarkDotNet.Attributes;
@@ -6,8 +8,8 @@ using BenchmarkDotNet.Order;
 namespace Benchmark;
 
 /// <summary>
-/// High-density completed async path. One benchmark operation performs many
-/// completed awaits so small per-await overhead becomes visible.
+/// Плотный completed path без реальной приостановки: одна операция выполняет много await по уже завершенным Task/ValueTask.
+/// Показывает overhead async-модели на горячем синхронно завершающемся пути.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
@@ -16,6 +18,7 @@ public class CompletedChainDepthBenchmarks
     private const int CompletedIterations = 10_000;
 
     [Benchmark]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public async Task<int> Task_ListFromResultNestedLoop()
     {
         var data = new List<int>(CompletedIterations);

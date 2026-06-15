@@ -17,7 +17,8 @@ SLOWER_COLOR = "#b84a4a"
 GRID_COLOR = "#d7dce2"
 TEXT_COLOR = "#20242a"
 
-DEFAULT_METRICS = ["Mean", "Median", "Error", "StdDev", "Allocated", "Gen0"]
+SUPPORTED_METRICS = ["Mean", "Median", "Error", "StdDev", "Allocated", "Gen0", "Gen1"]
+DEFAULT_METRICS = ["Mean", "Allocated"]
 
 TIME_UNITS_TO_NS = {
     "ns": 1.0,
@@ -41,6 +42,7 @@ METRIC_COLUMNS = {
     "Error",
     "StdDev",
     "Gen0",
+    "Gen1",
     "Allocated",
 }
 
@@ -162,8 +164,8 @@ def load_benchmark_report(path: Path, variant: str) -> pd.DataFrame:
             data[f"{metric}Ns"] = frame[metric].map(lambda x: parse_measurement(x, TIME_UNITS_TO_NS))
         elif metric == "Allocated":
             data["AllocatedBytes"] = frame[metric].map(lambda x: parse_measurement(x, SIZE_UNITS_TO_BYTES))
-        elif metric == "Gen0":
-            data["Gen0"] = pd.to_numeric(frame[metric], errors="coerce").fillna(0.0)
+        elif metric in {"Gen0", "Gen1"}:
+            data[metric] = pd.to_numeric(frame[metric], errors="coerce").fillna(0.0)
 
     normalized = pd.DataFrame(data)
 
@@ -258,7 +260,7 @@ def interpret_row(row: pd.Series) -> str:
 
 def parse_metrics(metrics_text: str) -> list[str]:
     metrics = [part.strip() for part in metrics_text.split(",") if part.strip()]
-    unknown = sorted(set(metrics) - set(DEFAULT_METRICS))
+    unknown = sorted(set(metrics) - set(SUPPORTED_METRICS))
     if unknown:
         raise ValueError(f"Unsupported metrics: {', '.join(unknown)}")
 
@@ -273,6 +275,7 @@ def metric_value_column(metric: str) -> str:
         "StdDev": "StdDevNs",
         "Allocated": "AllocatedBytes",
         "Gen0": "Gen0",
+        "Gen1": "Gen1",
     }[metric]
 
 
@@ -303,6 +306,53 @@ def choose_display_scale(values: pd.Series, kind: str) -> tuple[float, str]:
     return 1.0, ""
 
 
+def choose_delta_display_scale(values: pd.Series, metric: str) -> tuple[float, str]:
+    if metric == "AllocationDeltaBytes":
+        return choose_display_scale(values.abs(), "memory")
+
+    return 1.0, ""
+
+
+def display_method_name(method: str) -> str:
+    text = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", method.replace("_", " "))
+    text = text.replace("Value Task", "ValueTask")
+    text = re.sub(r"\s+Loop$", "", text).strip()
+    return re.sub(r"\s+", " ", text)
+
+
+def format_chart_value(value: float, scale: float, unit: str) -> str:
+    scaled = value / scale
+    if scaled == 0.0:
+        return f"0 {unit}".strip()
+
+    if unit:
+        if abs(scaled) >= 100.0:
+            return f"{scaled:.0f} {unit}"
+        if abs(scaled) >= 10.0:
+            return f"{scaled:.1f} {unit}"
+        return f"{scaled:.2f} {unit}"
+
+    if abs(scaled) >= 100.0:
+        return f"{scaled:.0f}"
+    if abs(scaled) >= 10.0:
+        return f"{scaled:.1f}"
+    return f"{scaled:.2f}"
+
+
+def format_scaled_value(value: float, metric: str) -> str:
+    kind = metric_kind(metric)
+    scale, unit = choose_display_scale(pd.Series([abs(value)]), kind)
+    return format_chart_value(value, scale, unit)
+
+
+def format_percent_delta(row: pd.Series) -> str:
+    value = row.get("PercentDelta", math.nan)
+    if pd.isna(value):
+        return "n/a"
+
+    return f"{float(value):+.1f}%"
+
+
 def available_metric(comparison: pd.DataFrame, metric: str) -> bool:
     base = metric_value_column(metric)
     return {f"{base}_Classic", f"{base}_Runtime"}.issubset(comparison.columns)
@@ -310,7 +360,7 @@ def available_metric(comparison: pd.DataFrame, metric: str) -> bool:
 
 def numeric_param_columns(frame: pd.DataFrame) -> list[str]:
     columns = []
-    metric_bases = {metric_value_column(metric) for metric in DEFAULT_METRICS}
+    metric_bases = {metric_value_column(metric) for metric in SUPPORTED_METRICS}
     candidates = sorted(
         {
             column.removesuffix("_Classic").removesuffix("_Runtime")
@@ -381,7 +431,7 @@ def is_flat(frame: pd.DataFrame) -> bool:
 
 
 def has_regression(frame: pd.DataFrame, metric: str) -> bool:
-    if metric in {"Mean", "Median", "Error", "StdDev", "Allocated", "Gen0"}:
+    if metric in {"Mean", "Median", "Error", "StdDev", "Allocated", "Gen0", "Gen1"}:
         return bool((frame["RuntimeValue"] > frame["ClassicValue"]).any())
 
     return False
@@ -455,7 +505,7 @@ def plot_metric_lines(
             linewidth=2,
             label="runtime",
         )
-        ax.set_title(method, loc="left", fontsize=10, pad=6)
+        ax.set_title(display_method_name(method), loc="left", fontsize=10, pad=6)
         ax.set_xlabel(param)
         ax.set_ylabel(metric_axis_label(metric, unit))
         ax.grid(color=GRID_COLOR, linewidth=0.8, alpha=0.8)
@@ -465,7 +515,12 @@ def plot_metric_lines(
     for index in range(len(methods), rows * columns):
         axes[index // columns][index % columns].axis("off")
 
-    fig.suptitle(f"{short_benchmark(benchmark)}: {metric}", x=0.02, ha="left", fontsize=16)
+    fig.suptitle(
+        f"{short_benchmark(benchmark)}: {derived_display_name(metric)}",
+        x=0.02,
+        ha="left",
+        fontsize=16,
+    )
     fig.tight_layout(rect=(0, 0, 1, 0.96))
     fig.savefig(output, bbox_inches="tight")
     plt.close(fig)
@@ -478,45 +533,84 @@ def plot_metric_bars(benchmark: str, frame: pd.DataFrame, metric: str, output: P
         kind,
     )
     plot_frame = frame.sort_values("Method").reset_index(drop=True)
+    plot_frame["DisplayMethod"] = plot_frame["Method"].map(display_method_name)
     positions = list(range(len(plot_frame)))
-    width = 0.36
-    height = max(5.6, 0.45 * len(plot_frame) + 3.0)
+    bar_height = 0.34
+    height = max(4.8, 0.62 * len(plot_frame) + 2.4)
 
-    _, ax = plt.subplots(figsize=(13.33, height), dpi=180)
-    ax.bar(
-        [pos - width / 2 for pos in positions],
-        plot_frame["ClassicValue"] / scale,
-        width=width,
+    fig, ax = plt.subplots(figsize=(13.33, height), dpi=180)
+    classic_values = plot_frame["ClassicValue"] / scale
+    runtime_values = plot_frame["RuntimeValue"] / scale
+    classic_error = None
+    runtime_error = None
+    if metric == "Mean" and {"ErrorNs_Classic", "ErrorNs_Runtime"}.issubset(plot_frame.columns):
+        classic_error = plot_frame["ErrorNs_Classic"] / scale
+        runtime_error = plot_frame["ErrorNs_Runtime"] / scale
+
+    ax.barh(
+        [pos - bar_height / 2 for pos in positions],
+        classic_values,
+        height=bar_height,
         color=CLASSIC_COLOR,
         label="classic",
+        xerr=classic_error,
+        error_kw={"elinewidth": 0.9, "ecolor": "#384250", "capsize": 2},
     )
-    ax.bar(
-        [pos + width / 2 for pos in positions],
-        plot_frame["RuntimeValue"] / scale,
-        width=width,
+    ax.barh(
+        [pos + bar_height / 2 for pos in positions],
+        runtime_values,
+        height=bar_height,
         color=RUNTIME_COLOR,
         label="runtime",
+        xerr=runtime_error,
+        error_kw={"elinewidth": 0.9, "ecolor": "#384250", "capsize": 2},
     )
-    ax.set_xticks(positions)
-    ax.set_xticklabels(plot_frame["Method"], rotation=30, ha="right")
-    ax.set_ylabel(metric_axis_label(metric, unit))
+
+    error_values = [classic_values, runtime_values]
+    if classic_error is not None:
+        error_values.append(classic_values + classic_error)
+    if runtime_error is not None:
+        error_values.append(runtime_values + runtime_error)
+    max_value = float(pd.concat(error_values, ignore_index=True).max()) if len(plot_frame) else 0.0
+    label_pad = max(max_value * 0.025, 0.05)
+
+    for index, row in plot_frame.iterrows():
+        label_x = max(float(row["ClassicValue"]), float(row["RuntimeValue"])) / scale + label_pad
+        ax.text(
+            label_x,
+            positions[index],
+            format_percent_delta(row),
+            ha="left",
+            va="center",
+            fontsize=9,
+            color=TEXT_COLOR,
+        )
+
+    ax.set_yticks(positions)
+    ax.set_yticklabels(plot_frame["DisplayMethod"])
+    ax.invert_yaxis()
+    ax.set_xlabel(metric_axis_label(metric, unit))
     ax.set_title(f"{short_benchmark(benchmark)}: {metric}", loc="left", pad=14)
-    ax.grid(axis="y", color=GRID_COLOR, linewidth=0.8, alpha=0.8)
+    ax.grid(axis="x", color=GRID_COLOR, linewidth=0.8, alpha=0.8)
     ax.set_axisbelow(True)
-    ax.legend(loc="best", frameon=False)
-    plt.tight_layout()
+    if max_value > 0:
+        ax.set_xlim(0, max_value * 1.22)
+    else:
+        ax.set_xlim(0, 1)
+    ax.legend(loc="lower right", frameon=False)
+    fig.subplots_adjust(left=0.28, right=0.96, top=0.90, bottom=0.14)
     output.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(output, bbox_inches="tight")
-    plt.close()
+    fig.savefig(output, bbox_inches="tight")
+    plt.close(fig)
 
 
 def metric_axis_label(metric: str, unit: str) -> str:
     suffix = f", {unit}" if unit else ""
     if metric in {"Mean", "Median", "Error", "StdDev"}:
-        return f"{metric} time per operation{suffix}; lower is better"
+        return f"{metric} per operation{suffix}"
     if metric == "Allocated":
-        return f"Allocated per operation{suffix}; lower is better"
-    return f"{metric}{suffix}; lower is better"
+        return f"Allocated per operation{suffix}"
+    return f"{metric}{suffix}"
 
 
 def metric_manifest_row(
@@ -614,7 +708,7 @@ def plot_derived_lines(
             ax.axhspan(0.95, 1.05, color="#d8d2b0", alpha=0.22, linewidth=0)
         else:
             ax.axhline(0.0, color=TEXT_COLOR, linewidth=1)
-        ax.set_title(method, loc="left", fontsize=10, pad=6)
+        ax.set_title(display_method_name(method), loc="left", fontsize=10, pad=6)
         ax.set_xlabel(param)
         ax.set_ylabel(derived_axis_label(metric))
         ax.grid(color=GRID_COLOR, linewidth=0.8, alpha=0.8)
@@ -631,35 +725,86 @@ def plot_derived_lines(
 
 def plot_derived_bars(benchmark: str, frame: pd.DataFrame, metric: str, output: Path) -> None:
     plot_frame = frame.sort_values("Method").reset_index(drop=True)
+    plot_frame["DisplayMethod"] = plot_frame["Method"].map(display_method_name)
     positions = list(range(len(plot_frame)))
     colors = [RUNTIME_COLOR if value >= 1.0 else SLOWER_COLOR for value in plot_frame[metric]]
     if metric != "Speedup":
         colors = [SLOWER_COLOR if value > 0 else RUNTIME_COLOR for value in plot_frame[metric]]
 
-    _, ax = plt.subplots(figsize=(13.33, max(5.6, 0.45 * len(plot_frame) + 3.0)), dpi=180)
-    ax.bar(positions, plot_frame[metric], color=colors)
-    ax.set_xticks(positions)
-    ax.set_xticklabels(plot_frame["Method"], rotation=30, ha="right")
+    scale, unit = choose_delta_display_scale(plot_frame[metric], metric)
+    values = plot_frame[metric] / scale
+    fig, ax = plt.subplots(figsize=(13.33, max(4.8, 0.62 * len(plot_frame) + 2.4)), dpi=180)
+    ax.barh(positions, values, color=colors)
+
+    max_abs = float(values.abs().max()) if len(values) else 0.0
+    label_pad = max(max_abs * 0.035, 0.05)
+    for index, row in plot_frame.iterrows():
+        value = float(row[metric]) / scale
+        if value >= 0:
+            label_x = value + label_pad
+            ha = "left"
+        else:
+            label_x = value - label_pad
+            ha = "right"
+        ax.text(
+            label_x,
+            positions[index],
+            format_derived_marker(row, metric, scale, unit),
+            ha=ha,
+            va="center",
+            fontsize=9,
+            color=TEXT_COLOR,
+        )
+
+    ax.set_yticks(positions)
+    ax.set_yticklabels(plot_frame["DisplayMethod"])
+    ax.invert_yaxis()
     if metric == "Speedup":
-        ax.axhline(1.0, color=TEXT_COLOR, linewidth=1)
-        ax.axhspan(0.95, 1.05, color="#d8d2b0", alpha=0.22, linewidth=0)
+        ax.axvline(1.0, color=TEXT_COLOR, linewidth=1)
+        ax.axvspan(0.95, 1.05, color="#d8d2b0", alpha=0.16, linewidth=0)
+        upper = max(float(values.max()) * 1.18, 1.12)
+        ax.set_xlim(0, upper)
     else:
-        ax.axhline(0.0, color=TEXT_COLOR, linewidth=1)
-    ax.set_ylabel(derived_axis_label(metric))
-    ax.set_title(f"{short_benchmark(benchmark)}: {metric}", loc="left", pad=14)
-    ax.grid(axis="y", color=GRID_COLOR, linewidth=0.8, alpha=0.8)
+        ax.axvline(0.0, color=TEXT_COLOR, linewidth=1)
+        lower = min(float(values.min()) - label_pad * 7.0, -label_pad * 7.0)
+        upper = max(float(values.max()) + label_pad * 7.0, label_pad * 7.0)
+        ax.set_xlim(lower, upper)
+    ax.set_xlabel(derived_axis_label(metric, unit))
+    ax.set_title(f"{short_benchmark(benchmark)}: {derived_display_name(metric)}", loc="left", pad=14)
+    ax.grid(axis="x", color=GRID_COLOR, linewidth=0.8, alpha=0.8)
     ax.set_axisbelow(True)
-    plt.tight_layout()
+    fig.subplots_adjust(left=0.28, right=0.96, top=0.90, bottom=0.14)
     output.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(output, bbox_inches="tight")
-    plt.close()
+    fig.savefig(output, bbox_inches="tight")
+    plt.close(fig)
 
 
-def derived_axis_label(metric: str) -> str:
+def format_derived_marker(row: pd.Series, metric: str, scale: float, unit: str) -> str:
     if metric == "Speedup":
-        return "Classic / runtime mean; >1 means runtime faster"
+        return f"{float(row[metric]):.2f}x"
+
     if metric == "AllocationDeltaBytes":
-        return "Runtime - classic allocated bytes"
+        delta = float(row[metric])
+        classic = float(row.get("AllocatedBytes_Classic", math.nan))
+        percent = math.nan if classic == 0.0 or pd.isna(classic) else delta / classic * 100.0
+        percent_text = "n/a" if pd.isna(percent) else f"{percent:+.1f}%"
+        return f"{format_chart_value(delta, scale, unit)} / {percent_text}"
+
+    return format_scaled_value(float(row[metric]), metric)
+
+
+def derived_display_name(metric: str) -> str:
+    if metric == "AllocationDeltaBytes":
+        return "Allocation delta"
+    return metric
+
+
+def derived_axis_label(metric: str, unit: str = "") -> str:
+    if metric == "Speedup":
+        return "Classic / runtime mean"
+    if metric == "AllocationDeltaBytes":
+        suffix = f", {unit}" if unit else ", bytes"
+        return f"Runtime - classic allocated{suffix}"
     return metric
 
 
@@ -815,7 +960,7 @@ def main() -> None:
     parser.add_argument(
         "--metrics",
         default=",".join(DEFAULT_METRICS),
-        help="Comma-separated metrics to plot. Supported: Mean,Median,Error,StdDev,Allocated,Gen0.",
+        help="Comma-separated metrics to plot. Supported: Mean,Median,Error,StdDev,Allocated,Gen0,Gen1.",
     )
     parser.add_argument(
         "--include-derived",

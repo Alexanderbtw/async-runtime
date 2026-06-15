@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.ExceptionPathBenchmarks-20260614-070936</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, macOS 26.4.1 (25E253) [Darwin 25.4.0]
+Apple M3 Pro, 1 CPU, 11 logical and 11 physical cores
+.NET SDK 11.0.100-preview.4.26230.115
+  [Host]     : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 11.0.0 (11.0.26.23115), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                          </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Direct_ThrowLoop_Control</td><td>946.2 &mu;s</td><td>18.44 &mu;s</td><td>39.69 &mu;s</td><td>57.6172</td><td>476.56 KB</td>
+</tr><tr><td>Task_DirectFaultedForwardingLoop</td><td>1,067.1 &mu;s</td><td>21.26 &mu;s</td><td>25.31 &mu;s</td><td>95.7031</td><td>789.06 KB</td>
+</tr><tr><td>ValueTask_DirectFaultedForwardingLoop</td><td>1,072.2 &mu;s</td><td>14.88 &mu;s</td><td>12.43 &mu;s</td><td>95.7031</td><td>789.06 KB</td>
+</tr><tr><td>Task_ThrowBeforeAwaitLoop</td><td>1,825.3 &mu;s</td><td>10.29 &mu;s</td><td>9.12 &mu;s</td><td>144.5313</td><td>1203.13 KB</td>
+</tr><tr><td>ValueTask_ThrowBeforeAwaitLoop</td><td>1,892.6 &mu;s</td><td>25.40 &mu;s</td><td>21.21 &mu;s</td><td>144.5313</td><td>1203.13 KB</td>
+</tr><tr><td>ValueTask_ThrowAfterSuspendedAwaitLoop</td><td>1,900.5 &mu;s</td><td>21.95 &mu;s</td><td>20.53 &mu;s</td><td>158.2031</td><td>1296.88 KB</td>
+</tr><tr><td>ValueTask_ThrowAfterCompletedAwaitLoop</td><td>1,915.0 &mu;s</td><td>36.67 &mu;s</td><td>74.91 &mu;s</td><td>144.5313</td><td>1203.13 KB</td>
+</tr><tr><td>Task_ThrowAfterSuspendedAwaitLoop</td><td>1,923.7 &mu;s</td><td>36.67 &mu;s</td><td>48.95 &mu;s</td><td>156.2500</td><td>1289.06 KB</td>
+</tr><tr><td>Task_ThrowAfterCompletedAwaitLoop</td><td>1,926.3 &mu;s</td><td>38.12 &mu;s</td><td>43.89 &mu;s</td><td>146.4844</td><td>1203.13 KB</td>
+</tr></tbody></table>
+</body>
+</html>
